@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="de" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reifen Ali Rüksen</title>
+    <style>
+        :root {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --dark: #111827;
+            --light: #f3f4f6;
+            --white: #ffffff;
+            --gray: #6b7280;
+            --green: #25d366;
+            --red: #dc2626;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--light); color: var(--dark); line-height: 1.6; padding: 15px; }
+        .top-bar { background: #1f2937; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .lang-group { display: flex; gap: 5px; }
+        .lang-btn { background: #374151; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+        .lang-btn.active, .lang-btn:hover { background: var(--primary); color: var(--dark); }
+        .busy-control { display: flex; align-items: center; gap: 8px; }
+        .busy-select { padding: 4px; border-radius: 4px; font-size: 0.85rem; }
+        .busy-toggle-btn { background: var(--green); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+        .busy-toggle-btn.is-busy { background: var(--red); }
+        .card { background: var(--white); border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        h1 { color: var(--primary-dark); font-size: 1.6rem; margin-bottom: 5px; }
+        p { color: var(--gray); font-size: 0.95rem; }
+        .service-list { list-style: none; margin-top: 10px; }
+        .service-list li { padding: 8px 0; border-bottom: 1px solid var(--light); display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .price { font-weight: bold; color: var(--primary-dark); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; color: var(--dark); }
+        select, input, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; }
+        .checkbox-group input { width: auto; }
+        .price-box { background: #fffbeb; border: 2px solid var(--primary); border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 15px; }
+        .price-box span { font-size: 1.3rem; font-weight: bold; color: var(--primary-dark); }
+        .btn-whatsapp { background-color: var(--green); color: white; border: none; width: 100%; padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-whatsapp:hover { background-color: #1ebe5d; }
+        .btn-gps { background-color: #3b82f6; color: white; border: none; padding: 6px 10px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+        .busy-banner { display: none; background-color: #fee2e2; color: #991b1b; border: 2px solid var(--red); padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="lang-group">
+            <button class="lang-btn active" id="btn-de" onclick="changeLanguage('de')">DE</button>
+            <button class="lang-btn" id="btn-tr" onclick="changeLanguage('tr')">TR</button>
+            <button class="lang-btn" id="btn-ru" onclick="changeLanguage('ru')">RU</button>
+            <button class="lang-btn" id="btn-ar" onclick="changeLanguage('ar')">AR</button>
+        </div>
+        <div class="busy-control">
+            <select id="etaMinutes" class="busy-select">
+                <option value="30 Min.">~30 Min</option>
+                <option value="45 Min.">~45 Min</option>
+                <option value="60 Min.">~1 Std</option>
+            </select>
+            <button id="busyToggleBtn" class="busy-toggle-btn" onclick="toggleBusyMode()">Müsait</button>
+        </div>
+    </div>
+
+    <div id="busyAlertBox" class="busy-banner">
+        <h3 id="txt-busyHead" style="margin-bottom: 5px;">⚠️ Aktueller Einsatz im Gange</h3>
+        <p id="txt-busyText" style="color: #991b1b; margin-bottom: 5px;">Wir sind aktuell im Notfalleinsatz gebunden.</p>
+        <p><strong id="txt-etaLabel">Wieder verfügbar in ca.:</strong> <span id="displayEta" style="text-decoration: underline;">30 Min.</span></p>
+    </div>
+
+    <div class="card">
+        <h1 id="txt-title">Reifen Ali Rüksen</h1>
+        <p id="txt-subtitle">24/7 Mobiler Reifenservice & Pannenhilfe (Hattingen & Ruhrgebiet)</p>
+    </div>
+
+    <div class="card">
+        <h3 id="txt-priceTitle" style="margin-bottom: 10px; color: var(--dark);">💰 Preise & Leistungen</h3>
+        <ul class="service-list">
+            <li><span id="txt-s1">Anfahrtspauschale (inkl. 15 km)</span> <span class="price">35,00 €</span></li>
+            <li><span id="txt-s2">PKW Räderwechsel / Saisonwechsel (4 Stk.)</span> <span class="price">79,00 €</span></li>
+            <li><span id="txt-s3">Ersatzrad-Montage / Pannen-Hilfe</span> <span class="price">50,00 €</span></li>
+            <li><span id="txt-s4">Spezial-Felgenreinigung (VIP)</span> <span class="price">+ 20,00 €</span></li>
+        </ul>
+    </div>
+
+    <div class="card" id="formCard">
+        <h3 id="txt-formTitle" style="margin-bottom: 12px; color: var(--dark);">🛠️ Sofort-Anfrage & Preisberechnung</h3>
+        
+        <div class="form-group">
+            <label id="txt-labelCar" for="fahrzeugTyp">Fahrzeugtyp</label>
+            <select id="fahrzeugTyp" onchange="calculateTotal()">
+                <option value="" disabled selected id="txt-optCarDefault">-- Bitte Fahrzeug wählen --</option>
+                <option value="PKW (Binek Araç)" data-price="35">PKW - Inkl. Anfahrt (35€)</option>
+                <option value="LKW / Transporter (Ticari)" data-price="90">LKW / Transporter - Notdienst (90€)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="txt-labelService" for="serviceArt">Gewünschter Service</label>
+            <select id="serviceArt" onchange="calculateTotal()">
+                <option value="" disabled selected id="txt-optServiceDefault">-- Bitte Service wählen --</option>
+                <option value="Ersatzrad-Montage & Pannenhilfe" data-price="50">Ersatzrad & Pannenhilfe (+50,00 €)</option>
+                <option value="Räderwechsel (Saisonwechsel)" data-price="79">Räderwechsel / Saisonwechsel (+79,00 €)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <div class="checkbox-group">
+                <input type="checkbox" id="vipFelgen" onchange="calculateTotal()">
+                <label id="txt-labelVip" for="vipFelgen" style="margin-bottom:0; cursor:pointer;">VIP Option: Spezial-Felgenreinigung (+20,00 €)</label>
+            </div>
+        </div>
+
+        <div class="price-box">
+            <div style="font-size: 0.85rem; color: #b45309; font-weight: 600;" id="txt-totalLabel">Geschätzter Gesamtpreis:</div>
+            <span id="totalPriceDisplay" style="color: var(--gray); font-size: 1.1rem;">Bitte wählen Sie Fahrzeug und Service</span>
+        </div>
+
+        <div class="form-group">
+            <label id="txt-labelSize" for="reifenGrosse">Reifengröße (z.B. 205/55 R16)</label>
+            <input type="text" id="reifenGrosse" placeholder="z.B. 205/55 R16">
+        </div>
+
+        <div class="form-group">
+            <label id="txt-labelLoc" for="standort">Aktueller Standort</label>
+            <textarea id="standort" rows="2" placeholder="Standort oder Adresse eingeben..."></textarea>
+            <button type="button" class="btn-gps" id="txt-gpsBtn" onclick="getGPS()">📍 GPS-Standort einfügen</button>
+        </div>
+
+        <button type="button" class="btn-whatsapp" onclick="sendWhatsApp()">
+            📲 WhatsApp ile Gönder / Senden
+        </button>
+    </div>
+
+    <script>
+        let isBusy = false;
+        let currentLang = 'de';
+
+        const texts = {
+            de: {
+                title: "Reifen Ali Rüksen",
+                subtitle: "24/7 Mobiler Reifenservice & Pannenhilfe (Hattingen & Ruhrgebiet)",
+                priceTitle: "💰 Preise & Leistungen",
+                s1: "Anfahrtspauschale (inkl. 15 km)",
+                s2: "PKW Räderwechsel / Saisonwechsel (4 Stk.)",
+                s3: "Ersatzrad-Montage / Pannen-Hilfe",
+                s4: "Spezial-Felgenreinigung (VIP)",
+                formTitle: "🛠️ Sofort-Anfrage & Preisberechnung",
+                labelCar: "Fahrzeugtyp & Anfahrt",
+                labelService: "Gewünschter Service",
+                labelVip: "VIP Option: Spezial-Felgenreinigung (+20,00 €)",
+                totalLabel: "Geschätzter Gesamtpreis:",
+                defaultPriceText: "Bitte wählen Sie Fahrzeug und Service",
+                labelSize: "Reifengröße (z.B. 205/55 R16)",
+                labelLoc: "Aktueller Standort",
+                gpsBtn: "📍 GPS-Standort einfügen",
+                optCarDefault: "-- Bitte Fahrzeug wählen --",
+                optServiceDefault: "-- Bitte Service wählen --",
+                busyHead: "⚠️ Aktueller Einsatz im Gange",
+                busyText: "Wir sind aktuell im Notfalleinsatz gebunden.",
+                etaLabel: "Wieder verfügbar in ca.:",
+                busyBtnText: "Besetzt",
+                freeBtnText: "Müsait"
+            },
+            tr: {
+                title: "Reifen Ali Rüksen",
+                subtitle: "7/24 Mobil Lastik Servisi ve Yol Yardım (Hattingen ve Ruhr Bölgesi)",
+                priceTitle: "💰 Fiyatlar ve Hizmetler",
+                s1: "Ulaşım / Yol Bedeli (15 km dahil)",
+                s2: "Binek Araç Mevsimlik Lastik Değişimi (4 Adet)",
+                s3: "Stepne Montajı / Yol Yardım",
+                s4: "Özel Jant Temizliği (VIP)",
+                formTitle: "🛠️ Canlı Fiyat Hesaplama ve Talep",
+                labelCar: "Araç Türü ve Ulaşım",
+                labelService: "İstenen Hizmet",
+                labelVip: "VIP Seçenek: Özel Jant Temizliği (+20,00 €)",
+                totalLabel: "Tahmini Toplam Tutar:",
+                defaultPriceText: "Lütfen araç türü ve hizmet seçiniz",
+                labelSize: "Lastik Ebadı (Örn: 205/55 R16)",
+                labelLoc: "Bulunduğunuz Konum",
+                gpsBtn: "📍 GPS Konumunu Ekle",
+                optCarDefault: "-- Lütfen Araç Seçin --",
+                optServiceDefault: "-- Lütfen Hizmet Seçin --",
+                busyHead: "⚠️ Şu An Sahadayız / Meşgulüz",
+                busyText: "Şu anda yol yardım operasyonundayız.",
+                etaLabel: "Tahmini Müsait Olma Süresi:",
+                busyBtnText: "Meşgul",
+                freeBtnText: "Müsait"
+            },
+            ru: {
+                title: "Reifen Ali Rüksen",
+                subtitle: "Мобильный шиномонтаж и помощь на дороге 24/7",
+                priceTitle: "💰 Цены и услуги",
+                s1: "Выезд мастера (до 15 km)",
+                s2: "Сезонная смена колес (4 шт.)",
+                s3: "Установка запаски / Помощь",
+                s4: "Очистка дисков (VIP)",
+                formTitle: "🛠️ Расчет цены и заказ",
+                labelCar: "Тип авто и выезд",
+                labelService: "Желаемая услуга",
+                labelVip: "VIP: Очистка дисков (+20,00 €)",
+                totalLabel: "Примерная итоговая цена:",
+                defaultPriceText: "Выберите тип авто и услугу",
+                labelSize: "Размер шин (напр. 205/55 R16)",
+                labelLoc: "Текущее местоположение",
+                gpsBtn: "📍 Вставить GPS",
+                optCarDefault: "-- Выберите тип авто --",
+                optServiceDefault: "-- Выберите услугу --",
+                busyHead: "⚠️ Идет выезд / Занято",
+                busyText: "В данный момент мы на выезде.",
+                etaLabel: "Свободны примерно через:",
+                busyBtnText: "Занято",
+                freeBtnText: "Свободен"
+            },
+            ar: {
+                title: "Reifen Ali Rüksen",
+                subtitle: "خدمة إطارات متنقلة ومساعدة على الطريق 24/7",
+                priceTitle: "💰 الأسعار والخدمات",
+                s1: "رسوم الحضور (شاملة 15 كم)",
+                s2: "تغيير الإطارات الموسمية (4 قطع)",
+                s3: "تركيب الإطار الاحتياطي / المساعدة",
+                s4: "تنظيف الجنوط (VIP)",
+                formTitle: "🛠️ حساب السعر والطلب الفوري",
+                labelCar: "نوع المركبة ورسوم الحضور",
+                labelService: "الخدمة المطلوبة",
+                labelVip: "خيار VIP: تنظيف الجنوط (+20,00 €)",
+                totalLabel: "السعر الإجمالي المقدر:",
+                defaultPriceText: "يرجى اختيار نوع المركبة والخدمة",
+                labelSize: "مقاس الإطار (مثال: 205/55 R16)",
+                labelLoc: "الموقع الحالي",
+                gpsBtn: "📍 إدراج موقع GPS",
+                optCarDefault: "-- اختر نوع المركبة --",
+                optServiceDefault: "-- اختر الخدمة --",
+                busyHead: "⚠️ نحن في مهمة طوارئ حالياً",
+                busyText: "نحن مشغولون حالياً في خدمة طوارئ.",
+                etaLabel: "سنكون متاحين خلال:",
+                busyBtnText: "مشغول",
+                freeBtnText: "متاح"
+            }
+        };
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + lang).classList.add('active');
+
+            if(lang === 'ar') {
+                document.getElementById('htmlRoot').setAttribute('dir', 'rtl');
+            } else {
+                document.getElementById('htmlRoot').setAttribute('dir', 'ltr');
+            }
+
+            const t = texts[lang];
+            document.getElementById('txt-title').innerText = t.title;
+            document.getElementById('txt-subtitle').innerText = t.subtitle;
+            document.getElementById('txt-priceTitle').innerText = t.priceTitle;
+            document.getElementById('txt-s1').innerText = t.s1;
+            document.getElementById('txt-s2').innerText = t.s2;
+            document.getElementById('txt-s3').innerText = t.s3;
+            document.getElementById('txt-s4').innerText = t.s4;
+            document.getElementById('txt-formTitle').innerText = t.formTitle;
+            document.getElementById('txt-labelCar').innerText = t.labelCar;
+            document.getElementById('txt-labelService').innerText = t.labelService;
+            document.getElementById('txt-labelVip').innerText = t.labelVip;
+            document.getElementById('txt-totalLabel').innerText = t.totalLabel;
+            document.getElementById('txt-labelSize').innerText = t.labelSize;
+            document.getElementById('txt-labelLoc').innerText = t.labelLoc;
+            document.getElementById('txt-gpsBtn').innerText = t.gpsBtn;
+            document.getElementById('txt-optCarDefault').innerText = t.optCarDefault;
+            document.getElementById('txt-optServiceDefault').innerText = t.optServiceDefault;
+            document.getElementById('txt-busyHead').innerText = t.busyHead;
+            document.getElementById('txt-busyText').innerText = t.busyText;
+            document.getElementById('txt-etaLabel').innerText = t.etaLabel;
+
+            const btn = document.getElementById('busyToggleBtn');
+            btn.innerText = isBusy ? t.busyBtnText : t.freeBtnText;
+
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            const carSelect = document.getElementById('fahrzeugTyp');
+            const serviceSelect = document.getElementById('serviceArt');
+            const vipCheckbox = document.getElementById('vipFelgen');
+            const display = document.getElementById('totalPriceDisplay');
+            const t = texts[currentLang];
+
+            if(carSelect.value === "" || serviceSelect.value === "") {
+                display.innerText = t.defaultPriceText;
+                display.style.color = "var(--gray)";
+                display.style.fontSize = "1.1rem";
+                return;
+            }
+
+            const carPrice = parseInt(carSelect.options[carSelect.selectedIndex].getAttribute('data-price')) || 0;
+            const servicePrice = parseInt(serviceSelect.options[serviceSelect.selectedIndex].getAttribute('data-price')) || 0;
+            const vipPrice = vipCheckbox.checked ? 20 : 0;
+
+            const total = carPrice + servicePrice + vipPrice;
+            display.innerText = total.toFixed(2) + " €";
+            display.style.color = "var(--primary-dark)";
+            display.style.fontSize = "1.3rem";
+        }
+
+        function toggleBusyMode() {
+            isBusy = !isBusy;
+            const btn = document.getElementById('busyToggleBtn');
+            const alertBox = document.getElementById('busyAlertBox');
+            const formCard = document.getElementById('formCard');
+            const selectedEta = document.getElementById('etaMinutes').value;
+            const t = texts[currentLang];
+
+            if (isBusy) {
+                btn.innerText = t.busyBtnText;
+                btn.classList.add('is-busy');
+                document.getElementById('displayEta').innerText = selectedEta;
+                alertBox.style.display = "block";
+                formCard.style.display = "none";
+            } else {
+                btn.innerText = t.freeBtnText;
+                btn.classList.remove('is-busy');
+                alertBox.style.display = "none";
+                formCard.style.display = "block";
+            }
+        }
+
+        function getGPS() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    document.getElementById('standort').value = "Google Maps GPS: https://maps.google.com/?q=" + lat + "," + lon;
+                }, function(error) {
+                    alert("GPS konum alınamadı.");
+                });
+            }
+        }
+
+        function sendWhatsApp() {
+            const carSelect = document.getElementById('fahrzeugTyp');
+            const serviceSelect = document.getElementById('serviceArt');
+            const t = texts[currentLang];
+
+            if(carSelect.value === "" || serviceSelect.value === "") {
+                alert(currentLang === 'tr' ? "Lütfen araç ve hizmet seçiniz!" : "Bitte wählen Sie Fahrzeug und Service!");
+                return;
+            }
+
+            const fahrzeug = carSelect.value;
+            const service = serviceSelect.value;
+            const vip = document.getElementById('vipFelgen').checked ? "Evet (+20€ VIP Jant)" : "İstemiyor";
+            const totalPrice = document.getElementById('totalPriceDisplay').innerText;
+            const groesse = document.getElementById('reifenGrosse').value;
+            const ort = document.getElementById('standort').value;
+
+            const text = `Selam Ali, sitedeki fiyatı kabul ediyorum, acil destek lazım!\n\n` +
+                         `🚗 Araç / Ulaşım: ${fahrzeug}\n` +
+                         `🔧 Hizmet: ${service}\n` +
+                         `✨ VIP Jant Temizliği: ${vip}\n` +
+                         `💶 Toplam Tutar: ${totalPrice}\n` +
+                         `📏 Lastik Ebadı: ${groesse}\n` +
+                         `📍 Konum: ${ort}`;
+
+            const phone = "1633603205";
+            window.open(`https://wa.me/${phone}?text=` + encodeURIComponent(text), '_blank');
+        }
+    </script>
+</body>
+</html
